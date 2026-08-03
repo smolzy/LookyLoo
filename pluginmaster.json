@@ -1,0 +1,16 @@
+[
+  {
+    "Author": "Zericard",
+    "Name": "LookyLoo",
+    "InternalName": "LookyLoo",
+    "AssemblyVersion": "0.0.0.1",
+    "Description": "A lightweight plugin that monitors nearby players and indicates if they are targeting you.",
+    "ApplicableVersion": "any",
+    "DalamudApiLevel": 15,
+    "Punchline": "Find out who is secretly watching you.",
+    "IconUrl": "https://media.discordapp.net/attachments/1342534367058202736/1533903562864853144/origin-full-picture-of-these-staring-cats-v0-jxi6um5guggf1.png?format=png",
+    "DownloadLinkInstall": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip",
+    "DownloadLinkTesting": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip"
+  }
+]
