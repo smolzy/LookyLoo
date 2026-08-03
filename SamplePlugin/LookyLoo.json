@@ -1,0 +1,12 @@
+{
+    "Author":  "Zericard",
+    "Name":  "LookyLoo",
+    "Punchline":  "Catch players staring at you red-handed.",
+    "Description":  "A lightweight, modern UI plugin that monitors nearby players and highlights those who have you targeted. Includes a stealthy context menu for inspecting others without changing your own facing direction.",
+    "ApplicableVersion":  "any",
+    "Tags":  [
+                 "target",
+                 "monitor",
+                 "stealth"
+             ]
+}
