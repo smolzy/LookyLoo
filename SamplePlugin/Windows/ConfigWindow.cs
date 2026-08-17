@@ -37,22 +37,6 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
-        // === Detection ===
-        ImGui.TextColored(configuration.TitleColor, "Detection");
-        ImGui.Separator();
-        ImGui.Spacing();
-
-        ImGui.Text("Maximum detection distance:");
-        var maxDist = configuration.MaxDistance;
-        if (ImGui.SliderFloat("##MaxDistance", ref maxDist, 5.0f, 200.0f, "%.0f m"))
-        {
-            configuration.MaxDistance = maxDist;
-            configuration.Save();
-        }
-
-        ImGui.Spacing();
-        ImGui.Spacing();
-
         // === Behaviour ===
         ImGui.TextColored(configuration.TitleColor, "Behavior");
         ImGui.Separator();
