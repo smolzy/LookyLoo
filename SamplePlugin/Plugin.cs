@@ -31,6 +31,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
+    [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
 
@@ -370,6 +371,48 @@ public sealed class Plugin : IDalamudPlugin
     {
         string fullCommand = $"/{command} {info.Name}@{info.World}";
         CommandManager.ProcessCommand(fullCommand);
+    }
+
+    public void SendTell(NearbyPlayerInfo info)
+    {
+        string fullCommand = $"/tell {info.Name}@{info.World}";
+        CommandManager.ProcessCommand(fullCommand);
+    }
+
+    public void InviteToParty(NearbyPlayerInfo info)
+    {
+        string fullCommand = $"/pcmd add \"{info.Name}@{info.World}\"";
+        CommandManager.ProcessCommand(fullCommand);
+    }
+
+    public void FindOnMap(NearbyPlayerInfo info)
+    {
+        var obj = ObjectTable.SearchById(info.GameObjectId);
+        if (obj is IPlayerCharacter pc)
+        {
+            try
+            {
+                uint territoryId = ClientState.TerritoryType;
+                var territoryRow = DataManager.GetExcelSheet<TerritoryType>()?.GetRowOrDefault(territoryId);
+                uint mapId = territoryRow?.Map.RowId ?? 0;
+
+                unsafe
+                {
+                    var agentMap = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMap.Instance();
+                    if (agentMap != null && agentMap->CurrentMapId != 0)
+                    {
+                        mapId = agentMap->CurrentMapId;
+                    }
+                }
+
+                var payload = new Dalamud.Game.Text.SeStringHandling.Payloads.MapLinkPayload(territoryId, mapId, pc.Position.X, pc.Position.Z);
+                GameGui.OpenMapWithMapLink(payload);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "[LookyLoo] Failed to open map marker.");
+            }
+        }
     }
 
     public bool HasMoodlesIpc()

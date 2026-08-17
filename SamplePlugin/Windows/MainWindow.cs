@@ -324,6 +324,27 @@ public class MainWindow : Window, IDisposable
                 plugin.OpenNativeContextMenu(player);
         }
 
+        if (config.ShowSendTellOption && player.IsLoaded)
+        {
+            if (ImGui.Selectable("Send Tell"))
+                plugin.SendTell(player);
+        }
+
+        if (config.ShowInvitePartyOption && player.IsLoaded)
+        {
+            using (ImRaii.Disabled(player.IsPartyMember))
+            {
+                if (ImGui.Selectable("Invite to Party"))
+                    plugin.InviteToParty(player);
+            }
+        }
+
+        if (config.ShowFindOnMapOption && player.IsLoaded)
+        {
+            if (ImGui.Selectable("Find on Map"))
+                plugin.FindOnMap(player);
+        }
+
         if (config.ShowExamineOption && player.IsLoaded)
         {
             if (ImGui.Selectable("Examine"))

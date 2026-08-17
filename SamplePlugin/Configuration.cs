@@ -30,6 +30,9 @@ public class Configuration : IPluginConfiguration
     public bool ShowTargetOption { get; set; } = true;
     public bool ShowFocusTargetOption { get; set; } = true;
     public bool ShowNativeMenuOption { get; set; } = true;
+    public bool ShowSendTellOption { get; set; } = true;
+    public bool ShowInvitePartyOption { get; set; } = true;
+    public bool ShowFindOnMapOption { get; set; } = true;
     public bool ShowExamineOption { get; set; } = true;
     public bool ShowAdventurePlateOption { get; set; } = true;
     public bool ShowMoodlesOption { get; set; } = true;

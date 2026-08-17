@@ -128,6 +128,15 @@ public class ConfigWindow : Window, IDisposable
         var showNative = configuration.ShowNativeMenuOption;
         if (ImGui.Checkbox("Open Menu", ref showNative)) { configuration.ShowNativeMenuOption = showNative; configuration.Save(); }
 
+        var showTell = configuration.ShowSendTellOption;
+        if (ImGui.Checkbox("Send Tell", ref showTell)) { configuration.ShowSendTellOption = showTell; configuration.Save(); }
+
+        var showInvite = configuration.ShowInvitePartyOption;
+        if (ImGui.Checkbox("Invite to Party", ref showInvite)) { configuration.ShowInvitePartyOption = showInvite; configuration.Save(); }
+
+        var showMap = configuration.ShowFindOnMapOption;
+        if (ImGui.Checkbox("Find on Map", ref showMap)) { configuration.ShowFindOnMapOption = showMap; configuration.Save(); }
+
         var showExamine = configuration.ShowExamineOption;
         if (ImGui.Checkbox("Examine", ref showExamine)) { configuration.ShowExamineOption = showExamine; configuration.Save(); }
 
