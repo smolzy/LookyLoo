@@ -67,6 +67,13 @@ public class ConfigWindow : Window, IDisposable
         ImGui.Separator();
         ImGui.Spacing();
 
+        var openLogin = configuration.OpenOnLogin;
+        if (ImGui.Checkbox("Open window on login", ref openLogin))
+        {
+            configuration.OpenOnLogin = openLogin;
+            configuration.Save();
+        }
+
         var autoTarget = configuration.AutoTargetOnLeftClick;
         if (ImGui.Checkbox("Target on left click", ref autoTarget))
         {

@@ -99,11 +99,19 @@ public sealed class Plugin : IDalamudPlugin
         // Hook into framework update for background scanning
         Framework.Update += OnFrameworkUpdate;
 
+        // Auto-open on login
+        ClientState.Login += OnLogin;
+        if (ClientState.IsLoggedIn && Configuration.OpenOnLogin)
+        {
+            MainWindow.IsOpen = true;
+        }
+
         Log.Information($"[LookyLoo] Plugin loaded.");
     }
 
     public void Dispose()
     {
+        ClientState.Login -= OnLogin;
         Framework.Update -= OnFrameworkUpdate;
         ContextMenu.OnMenuOpened -= OnNativeMenuOpened;
 
@@ -117,6 +125,14 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager.RemoveHandler(CommandName);
         CommandManager.RemoveHandler(CommandNameConfig);
+    }
+
+    private void OnLogin()
+    {
+        if (Configuration.OpenOnLogin)
+        {
+            MainWindow.IsOpen = true;
+        }
     }
 
     // === Framework Update - background scan every 150ms ===

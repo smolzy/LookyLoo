@@ -14,7 +14,8 @@ public class Configuration : IPluginConfiguration
     // Detection settings
     public float MaxDistance { get; set; } = 100.0f;
 
-    // Notification settings
+    // Notification / Behavior settings
+    public bool OpenOnLogin { get; set; } = true;
     public bool AutoTargetOnLeftClick { get; set; } = true;
     public bool HighlightOnHover { get; set; } = true;
 
