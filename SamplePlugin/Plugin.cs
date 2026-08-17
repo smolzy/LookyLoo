@@ -375,8 +375,19 @@ public sealed class Plugin : IDalamudPlugin
 
     public void SendTell(NearbyPlayerInfo info)
     {
-        string fullCommand = $"/tell {info.Name}@{info.World}";
-        CommandManager.ProcessCommand(fullCommand);
+        unsafe
+        {
+            var uiModule = FFXIVClientStructs.FFXIV.Client.UI.UIModule.Instance();
+            if (uiModule != null)
+            {
+                var utf8 = FFXIVClientStructs.FFXIV.Client.System.String.Utf8String.FromString($"/tell {info.Name}@{info.World} ");
+                if (utf8 != null)
+                {
+                    uiModule->ProcessChatBoxEntry(utf8);
+                    utf8->Dtor(true);
+                }
+            }
+        }
     }
 
     public void InviteToParty(NearbyPlayerInfo info)
