@@ -31,6 +31,7 @@ public class Configuration : IPluginConfiguration
     public bool ShowNativeMenuOption { get; set; } = true;
     public bool ShowExamineOption { get; set; } = true;
     public bool ShowAdventurePlateOption { get; set; } = true;
+    public bool ShowMoodlesOption { get; set; } = true;
     public bool ShowCopyNameOption { get; set; } = true;
 
     // Color settings (inspired by Peeping Tim)

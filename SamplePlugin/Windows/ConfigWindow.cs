@@ -119,13 +119,16 @@ public class ConfigWindow : Window, IDisposable
         if (ImGui.Checkbox("Focus Target", ref showFocus)) { configuration.ShowFocusTargetOption = showFocus; configuration.Save(); }
 
         var showNative = configuration.ShowNativeMenuOption;
-        if (ImGui.Checkbox("Open Native Subcommand", ref showNative)) { configuration.ShowNativeMenuOption = showNative; configuration.Save(); }
+        if (ImGui.Checkbox("Open Menu", ref showNative)) { configuration.ShowNativeMenuOption = showNative; configuration.Save(); }
 
         var showExamine = configuration.ShowExamineOption;
         if (ImGui.Checkbox("Examine", ref showExamine)) { configuration.ShowExamineOption = showExamine; configuration.Save(); }
 
         var showAdventurePlate = configuration.ShowAdventurePlateOption;
         if (ImGui.Checkbox("View Adventurer Plate", ref showAdventurePlate)) { configuration.ShowAdventurePlateOption = showAdventurePlate; configuration.Save(); }
+
+        var showMoodles = configuration.ShowMoodlesOption;
+        if (ImGui.Checkbox("View Moodles (requires Moodles plugin)", ref showMoodles)) { configuration.ShowMoodlesOption = showMoodles; configuration.Save(); }
 
         var showCopy = configuration.ShowCopyNameOption;
         if (ImGui.Checkbox("Copy Name", ref showCopy)) { configuration.ShowCopyNameOption = showCopy; configuration.Save(); }

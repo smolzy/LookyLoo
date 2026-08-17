@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Lumina.Excel.Sheets;
+using Dalamud.Plugin.Ipc;
+using SamplePlugin.Helpers;
 
 namespace SamplePlugin;
 
@@ -48,6 +50,9 @@ public sealed class Plugin : IDalamudPlugin
     // World name cache
     private readonly Dictionary<uint, string> worldNames = new();
 
+    // Moodles IPC
+    private readonly ICallGateSubscriber<IPlayerCharacter, List<MoodlesStatusInfo>> getStatusManagerInfoByPlayerV2;
+
     // Throttle update
     private long lastUpdateTick = 0;
     private const int UpdateIntervalMs = 150;
@@ -65,6 +70,9 @@ public sealed class Plugin : IDalamudPlugin
                 worldNames[world.RowId] = world.Name.ExtractText();
             }
         }
+
+        // Moodles IPC subscriber
+        getStatusManagerInfoByPlayerV2 = PluginInterface.GetIpcSubscriber<IPlayerCharacter, List<MoodlesStatusInfo>>("Moodles.GetStatusManagerInfoByPlayerV2");
 
         ConfigWindow = new ConfigWindow(this);
         MainWindow = new MainWindow(this);
@@ -346,6 +354,26 @@ public sealed class Plugin : IDalamudPlugin
     {
         string fullCommand = $"/{command} {info.Name}@{info.World}";
         CommandManager.ProcessCommand(fullCommand);
+    }
+
+    public bool HasMoodlesIpc()
+    {
+        return getStatusManagerInfoByPlayerV2.HasFunction;
+    }
+
+    public List<MoodlesStatusInfo> TryGetMoodlesStatus(IPlayerCharacter player)
+    {
+        if (!getStatusManagerInfoByPlayerV2.HasFunction)
+            return new List<MoodlesStatusInfo>();
+
+        try
+        {
+            return getStatusManagerInfoByPlayerV2.InvokeFunc(player) ?? new List<MoodlesStatusInfo>();
+        }
+        catch
+        {
+            return new List<MoodlesStatusInfo>();
+        }
     }
 
     // === Helpers ===

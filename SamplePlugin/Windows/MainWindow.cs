@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using SamplePlugin.Helpers;
 using static SamplePlugin.Plugin;
 
 namespace SamplePlugin.Windows;
@@ -20,6 +21,11 @@ public class MainWindow : Window, IDisposable
     private string searchFilter = string.Empty;
     private int selectedTab = 0;
     private string? selectedPlayerKey = null;
+
+    // Moodles Modal State
+    private bool openMoodlesModal = false;
+    private string moodlesOwner = string.Empty;
+    private List<MoodlesStatusInfo> moodlesBuffs = new();
 
     // Aetherlove Colors
     private static readonly Vector4 ColorBody = new(0.85f, 0.85f, 0.85f, 1f);
@@ -274,11 +280,13 @@ public class MainWindow : Window, IDisposable
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 2f); // Compact spacing
 
-            DrawContextMenu(plugin, player, rowKey, config);
+            DrawContextMenu(player, rowKey, config);
         }
+
+        DrawMoodlesModal();
     }
 
-    private static void DrawContextMenu(Plugin plugin, NearbyPlayerInfo player, string rowKey, Configuration config)
+    private void DrawContextMenu(NearbyPlayerInfo player, string rowKey, Configuration config)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10, 10));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(10, 6));
@@ -312,7 +320,7 @@ public class MainWindow : Window, IDisposable
 
         if (config.ShowNativeMenuOption && player.IsLoaded)
         {
-            if (ImGui.Selectable("Native Subcommand"))
+            if (ImGui.Selectable("Open Menu"))
                 plugin.OpenNativeContextMenu(player);
         }
 
@@ -328,6 +336,24 @@ public class MainWindow : Window, IDisposable
                 plugin.OpenAdventurePlate(player);
         }
 
+        if (config.ShowMoodlesOption && player.IsLoaded && plugin.HasMoodlesIpc())
+        {
+            var obj = Plugin.ObjectTable.SearchById(player.GameObjectId);
+            if (obj is IPlayerCharacter pc)
+            {
+                var buffs = plugin.TryGetMoodlesStatus(pc);
+                if (buffs.Count > 0)
+                {
+                    if (ImGui.Selectable($"View Moodles ({buffs.Count})"))
+                    {
+                        moodlesOwner = player.Name;
+                        moodlesBuffs = buffs;
+                        openMoodlesModal = true;
+                    }
+                }
+            }
+        }
+
         ImGui.Separator();
 
         if (config.ShowCopyNameOption && ImGui.Selectable("Copy Name"))
@@ -339,5 +365,94 @@ public class MainWindow : Window, IDisposable
         ImGui.EndPopup();
         ImGui.PopStyleColor(2);
         ImGui.PopStyleVar(5);
+    }
+
+    private void DrawMoodlesModal()
+    {
+        if (openMoodlesModal)
+        {
+            ImGui.OpenPopup("Moodles Buffs##LookyLooMoodles");
+            openMoodlesModal = false;
+        }
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
+        ImGui.PushStyleColor(ImGuiCol.PopupBg, ColorWindowBg);
+
+        bool open = true;
+        if (ImGui.BeginPopupModal("Moodles Buffs##LookyLooMoodles", ref open, ImGuiWindowFlags.AlwaysAutoResize))
+        {
+            ImGui.TextColored(plugin.Configuration.TitleColor, $"Moodles for {moodlesOwner}");
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            if (moodlesBuffs.Count == 0)
+            {
+                ImGui.TextDisabled("No Moodles buffs found.");
+            }
+            else
+            {
+                float height = Math.Min(420f, Math.Max(110f, moodlesBuffs.Count * 95f));
+
+                using (var child = ImRaii.Child("MoodlesBuffList", new Vector2(500 * ImGuiHelpers.GlobalScale, height), true))
+                {
+                    if (child.Success)
+                    {
+                        for (int i = 0; i < moodlesBuffs.Count; i++)
+                        {
+                            var buff = moodlesBuffs[i];
+                            string title = MoodlesHelper.CleanMoodlesText(buff.Title);
+                            if (string.IsNullOrWhiteSpace(title))
+                                title = "(Untitled Moodle)";
+
+                            string description = MoodlesHelper.CleanMoodlesText(buff.Description);
+
+                            ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + 480f * ImGuiHelpers.GlobalScale);
+
+                            ImGui.TextColored(MoodlesHelper.GetBuffTypeColor(buff.Type), title);
+
+                            if (buff.Stacks > 1)
+                            {
+                                ImGui.SameLine();
+                                ImGui.TextDisabled($"x{buff.Stacks}");
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(description))
+                            {
+                                ImGui.Spacing();
+                                ImGui.TextWrapped(description);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(buff.Applier))
+                                ImGui.TextDisabled($"Applied by: {MoodlesHelper.CleanMoodlesText(buff.Applier)}");
+
+                            ImGui.PopTextWrapPos();
+
+                            if (i < moodlesBuffs.Count - 1)
+                            {
+                                ImGui.Spacing();
+                                ImGui.Separator();
+                                ImGui.Spacing();
+                            }
+                        }
+                    }
+                }
+            }
+
+            ImGui.Spacing();
+
+            if (ImGui.Button("Close", new Vector2(100 * ImGuiHelpers.GlobalScale, 0)))
+            {
+                moodlesBuffs.Clear();
+                moodlesOwner = string.Empty;
+                ImGui.CloseCurrentPopup();
+            }
+
+            ImGui.EndPopup();
+        }
+
+        ImGui.PopStyleColor();
+        ImGui.PopStyleVar(3);
     }
 }
