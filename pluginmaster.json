@@ -9,8 +9,8 @@
     "DalamudApiLevel": 15,
     "Punchline": "Catch players staring at you red-handed.",
     "IconUrl": "https://raw.githubusercontent.com/smolzy/LookyLoo/main/images/icon.png",
-    "DownloadLinkInstall": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip",
-    "DownloadLinkTesting": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip"
+    "DownloadLinkInstall": "https://raw.githubusercontent.com/smolzy/LookyLoo/main/download/latest.zip",
+    "DownloadLinkUpdate": "https://raw.githubusercontent.com/smolzy/LookyLoo/main/download/latest.zip",
+    "DownloadLinkTesting": "https://raw.githubusercontent.com/smolzy/LookyLoo/main/download/latest.zip"
   }
 ]

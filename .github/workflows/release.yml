@@ -25,9 +25,11 @@ jobs:
     - name: Download Dalamud
       run: |
         Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
-        Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+        Expand-Archive -Force latest.zip dalamud_dev
 
     - name: Build with dotnet
+      env:
+        DALAMUD_HOME: ${{ github.workspace }}\dalamud_dev
       run: dotnet build SamplePlugin.sln --configuration Release
 
     - name: Create GitHub Release
