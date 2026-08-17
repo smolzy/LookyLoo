@@ -13,6 +13,9 @@ jobs:
   build:
     runs-on: windows-2022
 
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -34,7 +37,6 @@ jobs:
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: SamplePlugin/SamplePlugin/bin/x64/Release/LookyLoo/latest.zip
+        files: download/latest.zip
         generate_release_notes: true
