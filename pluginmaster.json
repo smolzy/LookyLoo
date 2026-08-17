@@ -3,14 +3,14 @@
     "Author": "Zericard",
     "Name": "LookyLoo",
     "InternalName": "LookyLoo",
-    "AssemblyVersion": "0.0.0.1",
-    "Description": "A lightweight plugin that monitors nearby players and indicates if they are targeting you.",
+    "AssemblyVersion": "1.0.0.0",
+    "Description": "A lightweight, modern UI plugin that monitors nearby players and highlights those who have you targeted. Includes a stealthy context menu for inspecting others without changing your own facing direction.",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
-    "Punchline": "Find out who is secretly watching you.",
-    "IconUrl": "https://media.discordapp.net/attachments/1342534367058202736/1533903562864853144/origin-full-picture-of-these-staring-cats-v0-jxi6um5guggf1.png?format=png",
-    "DownloadLinkInstall": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip",
-    "DownloadLinkTesting": "https://github.com/smolzy/LookyLoo/releases/download/release/latest.zip"
+    "Punchline": "Catch players staring at you red-handed.",
+    "IconUrl": "https://raw.githubusercontent.com/smolzy/LookyLoo/main/images/icon.png",
+    "DownloadLinkInstall": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip",
+    "DownloadLinkTesting": "https://github.com/smolzy/LookyLoo/releases/download/v1.0.0.0/latest.zip"
   }
 ]
