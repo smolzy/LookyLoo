@@ -25,10 +25,23 @@ public class ConfigWindow : Window, IDisposable
 
     public override void PreDraw()
     {
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0f);
+
         if (configuration.IsConfigWindowMovable)
             Flags &= ~ImGuiWindowFlags.NoMove;
         else
             Flags |= ImGuiWindowFlags.NoMove;
+    }
+
+    public override void PostDraw()
+    {
+        ImGui.PopStyleVar(7);
     }
 
     public override void Draw()
@@ -67,6 +80,29 @@ public class ConfigWindow : Window, IDisposable
             configuration.HighlightOnHover = highlight;
             configuration.Save();
         }
+
+        ImGui.Spacing();
+        ImGui.Spacing();
+
+        // === List Display Options ===
+        ImGui.TextColored(configuration.TitleColor, "List Display Options");
+        ImGui.Separator();
+        ImGui.Spacing();
+
+        var showJob = configuration.ShowJob;
+        if (ImGui.Checkbox("Show Job Abbreviation (e.g. [PLD])", ref showJob)) { configuration.ShowJob = showJob; configuration.Save(); }
+
+        var showLevel = configuration.ShowLevel;
+        if (ImGui.Checkbox("Show Level (e.g. Lv.100)", ref showLevel)) { configuration.ShowLevel = showLevel; configuration.Save(); }
+
+        var showWorld = configuration.ShowWorld;
+        if (ImGui.Checkbox("Show World / Server (e.g. Moogle)", ref showWorld)) { configuration.ShowWorld = showWorld; configuration.Save(); }
+
+        var showCompany = configuration.ShowCompanyTag;
+        if (ImGui.Checkbox("Show Free Company Tag (e.g. <FC>)", ref showCompany)) { configuration.ShowCompanyTag = showCompany; configuration.Save(); }
+
+        var showDistance = configuration.ShowDistance;
+        if (ImGui.Checkbox("Show Distance (e.g. 15m)", ref showDistance)) { configuration.ShowDistance = showDistance; configuration.Save(); }
 
         ImGui.Spacing();
         ImGui.Spacing();

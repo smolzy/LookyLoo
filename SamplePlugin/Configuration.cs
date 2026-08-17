@@ -18,6 +18,13 @@ public class Configuration : IPluginConfiguration
     public bool AutoTargetOnLeftClick { get; set; } = true;
     public bool HighlightOnHover { get; set; } = true;
 
+    // List Display Toggles
+    public bool ShowJob { get; set; } = true;
+    public bool ShowLevel { get; set; } = false;
+    public bool ShowWorld { get; set; } = false;
+    public bool ShowCompanyTag { get; set; } = false;
+    public bool ShowDistance { get; set; } = false;
+
     // Right-click context menu options (shown/hidden)
     public bool ShowTargetOption { get; set; } = true;
     public bool ShowFocusTargetOption { get; set; } = true;

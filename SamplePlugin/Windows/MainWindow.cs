@@ -29,7 +29,6 @@ public class MainWindow : Window, IDisposable
     private static readonly Vector4 ColorCardBg = new(0.15f, 0.15f, 0.16f, 1f);
     private static readonly Vector4 ColorCardHover = new(0.20f, 0.20f, 0.22f, 1f);
     private static readonly Vector4 ColorCardActive = new(0.25f, 0.25f, 0.28f, 1f);
-    private static readonly uint ColorDivider = 0x30FFFFFFu;
 
     public MainWindow(Plugin plugin)
         : base("LookyLoo", ImGuiWindowFlags.NoScrollbar)
@@ -37,7 +36,7 @@ public class MainWindow : Window, IDisposable
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(180, 200),
-            MaximumSize = new Vector2(300, float.MaxValue)
+            MaximumSize = new Vector2(800, float.MaxValue)
         };
 
         Size = new Vector2(200, 320);
@@ -53,11 +52,15 @@ public class MainWindow : Window, IDisposable
 
     public override void PreDraw()
     {
-        // Inject Aetherlove Style Vars (Less rounded per user request, more compact)
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 8f);
+        // Square UI styling (0 rounding)
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8f, 8f));
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 4f);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 4f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0f);
         
         ImGui.PushStyleColor(ImGuiCol.WindowBg, ColorWindowBg);
         ImGui.PushStyleColor(ImGuiCol.Text, ColorBody);
@@ -69,7 +72,7 @@ public class MainWindow : Window, IDisposable
     public override void PostDraw()
     {
         ImGui.PopStyleColor(5);
-        ImGui.PopStyleVar(4);
+        ImGui.PopStyleVar(8);
     }
 
     public override void Draw()
@@ -115,7 +118,9 @@ public class MainWindow : Window, IDisposable
             if (string.IsNullOrWhiteSpace(searchFilter)) return true;
 
             return p.Name.Contains(searchFilter, StringComparison.OrdinalIgnoreCase)
-                || p.World.Contains(searchFilter, StringComparison.OrdinalIgnoreCase);
+                || p.World.Contains(searchFilter, StringComparison.OrdinalIgnoreCase)
+                || p.JobAbbreviation.Contains(searchFilter, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrEmpty(p.CompanyTag) && p.CompanyTag.Contains(searchFilter, StringComparison.OrdinalIgnoreCase));
         }).ToList();
 
         // Sort history by time for the Targeting Me tab
@@ -135,7 +140,7 @@ public class MainWindow : Window, IDisposable
         var childDrawList = ImGui.GetWindowDrawList();
 
         float cardHeight = 28f * ImGuiHelpers.GlobalScale;
-        float rounding = 4f; // Less rounded
+        float rounding = 0f; // Square / No rounding
 
         foreach (var player in filteredList)
         {
@@ -189,16 +194,20 @@ public class MainWindow : Window, IDisposable
 
             childDrawList.AddRectFilled(rectMin, rectMax, ImGui.ColorConvertFloat4ToU32(bgCol), rounding);
             
-            // Draw Target Indicator (Green dot) if targeting me
+            // Draw Target Indicator (Green square) if targeting me
             var textPos = new Vector2(rectMin.X + 12f, rectMin.Y + 8f);
             if (player.IsActive)
             {
-                childDrawList.AddCircleFilled(new Vector2(rectMin.X + 16f, rectMin.Y + cardHeight / 2f), 4f, ImGui.ColorConvertFloat4ToU32(ColorLiveGreen));
+                var sqMin = new Vector2(rectMin.X + 12f, rectMin.Y + (cardHeight - 7f) / 2f);
+                var sqMax = new Vector2(rectMin.X + 19f, rectMin.Y + (cardHeight + 7f) / 2f);
+                childDrawList.AddRectFilled(sqMin, sqMax, ImGui.ColorConvertFloat4ToU32(ColorLiveGreen), 0f);
                 textPos.X += 14f;
             }
             else if (isCurrentTarget)
             {
-                childDrawList.AddCircleFilled(new Vector2(rectMin.X + 16f, rectMin.Y + cardHeight / 2f), 4f, 0xFF00D8FFu); // Gold/Yellow
+                var sqMin = new Vector2(rectMin.X + 12f, rectMin.Y + (cardHeight - 7f) / 2f);
+                var sqMax = new Vector2(rectMin.X + 19f, rectMin.Y + (cardHeight + 7f) / 2f);
+                childDrawList.AddRectFilled(sqMin, sqMax, 0xFF00D8FFu, 0f); // Gold/Yellow
                 textPos.X += 14f;
             }
 
@@ -211,14 +220,56 @@ public class MainWindow : Window, IDisposable
             // Adjust vertical centering
             textPos.Y = rectMin.Y + (cardHeight - ImGui.GetFontSize()) / 2f;
             childDrawList.AddText(textPos, ImGui.ColorConvertFloat4ToU32(nameColor), player.Name);
+            
+            float curX = textPos.X + ImGui.CalcTextSize(player.Name).X;
+            uint subtleColorU32 = ImGui.ColorConvertFloat4ToU32(ColorSubtle);
 
-            // Draw history time on the right side if they stopped targeting
+            if (config.ShowLevel && player.Level > 0)
+            {
+                string lvlStr = $" Lv.{player.Level}";
+                childDrawList.AddText(new Vector2(curX, textPos.Y), subtleColorU32, lvlStr);
+                curX += ImGui.CalcTextSize(lvlStr).X;
+            }
+
+            if (config.ShowJob && !string.IsNullOrEmpty(player.JobAbbreviation))
+            {
+                string jobStr = $" [{player.JobAbbreviation}]";
+                childDrawList.AddText(new Vector2(curX, textPos.Y), subtleColorU32, jobStr);
+                curX += ImGui.CalcTextSize(jobStr).X;
+            }
+
+            if (config.ShowCompanyTag && !string.IsNullOrEmpty(player.CompanyTag))
+            {
+                string fcStr = $" <{player.CompanyTag}>";
+                childDrawList.AddText(new Vector2(curX, textPos.Y), subtleColorU32, fcStr);
+                curX += ImGui.CalcTextSize(fcStr).X;
+            }
+
+            if (config.ShowWorld && !string.IsNullOrEmpty(player.World))
+            {
+                string worldStr = $" @{player.World}";
+                childDrawList.AddText(new Vector2(curX, textPos.Y), subtleColorU32, worldStr);
+                curX += ImGui.CalcTextSize(worldStr).X;
+            }
+
+            // Draw right side info (Distance and/or History Time)
+            string rightStr = string.Empty;
+            if (config.ShowDistance && player.IsLoaded)
+            {
+                rightStr = $"{player.Distance:0}m";
+            }
+
             if (!player.IsActive && player.HasEverTargetedMe && player.LastTargetedMeTime.HasValue)
             {
                 string timeStr = player.LastTargetedMeTime.Value.ToString("HH:mm");
-                var timeSize = ImGui.CalcTextSize(timeStr);
-                var timePos = new Vector2(rectMax.X - timeSize.X - 12f, textPos.Y);
-                childDrawList.AddText(timePos, ImGui.ColorConvertFloat4ToU32(ColorSubtle), timeStr);
+                rightStr = string.IsNullOrEmpty(rightStr) ? timeStr : $"{rightStr}  {timeStr}";
+            }
+
+            if (!string.IsNullOrEmpty(rightStr))
+            {
+                var rightSize = ImGui.CalcTextSize(rightStr);
+                var rightPos = new Vector2(rectMax.X - rightSize.X - 10f, textPos.Y);
+                childDrawList.AddText(rightPos, subtleColorU32, rightStr);
             }
 
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 2f); // Compact spacing
@@ -231,14 +282,16 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10, 10));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(10, 6));
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 12f);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
         ImGui.PushStyleColor(ImGuiCol.PopupBg, ColorWindowBg);
         ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.25f, 0.25f, 0.28f, 1f));
         
         if (!ImGui.BeginPopup($"ContextMenu_{rowKey}"))
         {
             ImGui.PopStyleColor(2);
-            ImGui.PopStyleVar(3);
+            ImGui.PopStyleVar(5);
             return;
         }
 
@@ -285,6 +338,6 @@ public class MainWindow : Window, IDisposable
 
         ImGui.EndPopup();
         ImGui.PopStyleColor(2);
-        ImGui.PopStyleVar(3);
+        ImGui.PopStyleVar(5);
     }
 }

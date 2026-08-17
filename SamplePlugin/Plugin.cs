@@ -149,6 +149,21 @@ public sealed class Plugin : IDalamudPlugin
                     info.LastSeen = DateTime.Now;
                     info.IsLoaded = true;
                     info.GameObjectId = pc.GameObjectId;
+                    info.JobId = pc.ClassJob.IsValid ? pc.ClassJob.RowId : 0;
+                    info.JobAbbreviation = pc.ClassJob.IsValid ? pc.ClassJob.Value.Abbreviation.ToString() : "?";
+
+                    unsafe
+                    {
+                        var chara = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)pc.Address;
+                        if (chara != null)
+                        {
+                            var foray = chara->GetForayInfo();
+                            info.Level = (foray != null && foray->Level != 0) ? foray->Level : pc.Level;
+                            info.CompanyTag = chara->FreeCompanyTagString;
+                            info.IsFriend = chara->IsFriend;
+                            info.IsPartyMember = chara->IsPartyMember;
+                        }
+                    }
 
                     if (targetingMe)
                     {
@@ -347,12 +362,36 @@ public sealed class Plugin : IDalamudPlugin
 
     private NearbyPlayerInfo CreatePlayerInfo(IPlayerCharacter pc, float distance, bool targetingMe)
     {
+        byte level = pc.Level;
+        string companyTag = string.Empty;
+        bool isFriend = false;
+        bool isParty = false;
+
+        unsafe
+        {
+            var chara = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)pc.Address;
+            if (chara != null)
+            {
+                var foray = chara->GetForayInfo();
+                if (foray != null && foray->Level != 0)
+                    level = foray->Level;
+
+                companyTag = chara->FreeCompanyTagString;
+                isFriend = chara->IsFriend;
+                isParty = chara->IsPartyMember;
+            }
+        }
+
         return new NearbyPlayerInfo
         {
             Name = pc.Name.TextValue,
             World = GetWorldName(pc.HomeWorld.RowId),
             JobId = pc.ClassJob.IsValid ? pc.ClassJob.RowId : 0,
             JobAbbreviation = pc.ClassJob.IsValid ? pc.ClassJob.Value.Abbreviation.ToString() : "?",
+            Level = level,
+            CompanyTag = companyTag,
+            IsFriend = isFriend,
+            IsPartyMember = isParty,
             Distance = distance,
             IsActive = targetingMe,
             WasTargetingMe = targetingMe,
@@ -380,6 +419,10 @@ public sealed class Plugin : IDalamudPlugin
         public string World { get; set; } = string.Empty;
         public uint JobId { get; set; }
         public string JobAbbreviation { get; set; } = string.Empty;
+        public byte Level { get; set; }
+        public string CompanyTag { get; set; } = string.Empty;
+        public bool IsFriend { get; set; }
+        public bool IsPartyMember { get; set; }
         public float Distance { get; set; }
 
         /// <summary>True if currently targeting the local player.</summary>
