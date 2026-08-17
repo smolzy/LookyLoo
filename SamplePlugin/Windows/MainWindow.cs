@@ -50,6 +50,16 @@ public class MainWindow : Window, IDisposable
         BgAlpha = 0.95f;
 
         this.plugin = plugin;
+
+        TitleBarButtons =
+        [
+            new()
+            {
+                Icon = FontAwesomeIcon.Cog,
+                ShowTooltip = () => ImGui.SetTooltip("Open Settings"),
+                Click = (btn) => plugin.ToggleConfigUi()
+            }
+        ];
     }
 
     public void Dispose() { }
@@ -76,14 +86,9 @@ public class MainWindow : Window, IDisposable
         var allPlayers = plugin.GetNearbyPlayers();
         int targetingMeCount = allPlayers.Count(p => p.IsActive);
 
-        // Search bar and settings
-        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 28f * ImGuiHelpers.GlobalScale);
+        // Search bar (full width)
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         ImGui.InputTextWithHint("##SearchFilter", "Search...", ref searchFilter, 64);
-        
-        ImGui.SameLine();
-        if (Dalamud.Interface.Components.ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-            plugin.ToggleConfigUi();
-            
         ImGui.Spacing();
 
         // Modern Tabs (Custom drawn or heavily styled)
