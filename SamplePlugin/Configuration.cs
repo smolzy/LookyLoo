@@ -16,6 +16,7 @@ public class Configuration : IPluginConfiguration
 
     // Notification / Behavior settings
     public bool OpenOnLogin { get; set; } = true;
+    public bool ShowDtrEntry { get; set; } = true;
     public bool AutoTargetOnLeftClick { get; set; } = true;
     public bool HighlightOnHover { get; set; } = true;
 

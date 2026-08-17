@@ -25,14 +25,6 @@ public class ConfigWindow : Window, IDisposable
 
     public override void PreDraw()
     {
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0f);
-
         if (configuration.IsConfigWindowMovable)
             Flags &= ~ImGuiWindowFlags.NoMove;
         else
@@ -41,7 +33,6 @@ public class ConfigWindow : Window, IDisposable
 
     public override void PostDraw()
     {
-        ImGui.PopStyleVar(7);
     }
 
     public override void Draw()
@@ -72,6 +63,14 @@ public class ConfigWindow : Window, IDisposable
         {
             configuration.OpenOnLogin = openLogin;
             configuration.Save();
+        }
+
+        var showDtr = configuration.ShowDtrEntry;
+        if (ImGui.Checkbox("Show player count on server info bar (DTR)", ref showDtr))
+        {
+            configuration.ShowDtrEntry = showDtr;
+            configuration.Save();
+            plugin.UpdateDtrShown(showDtr);
         }
 
         var autoTarget = configuration.AutoTargetOnLeftClick;

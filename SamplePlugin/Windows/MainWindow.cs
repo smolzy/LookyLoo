@@ -58,16 +58,6 @@ public class MainWindow : Window, IDisposable
 
     public override void PreDraw()
     {
-        // Square UI styling (0 rounding)
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(8f, 8f));
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.TabRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.GrabRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.ScrollbarRounding, 0f);
-        
         ImGui.PushStyleColor(ImGuiCol.WindowBg, ColorWindowBg);
         ImGui.PushStyleColor(ImGuiCol.Text, ColorBody);
         ImGui.PushStyleColor(ImGuiCol.FrameBg, ColorCardBg);
@@ -78,7 +68,6 @@ public class MainWindow : Window, IDisposable
     public override void PostDraw()
     {
         ImGui.PopStyleColor(5);
-        ImGui.PopStyleVar(8);
     }
 
     public override void Draw()
@@ -289,16 +278,13 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(10, 10));
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(10, 6));
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
         ImGui.PushStyleColor(ImGuiCol.PopupBg, ColorWindowBg);
         ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(0.25f, 0.25f, 0.28f, 1f));
         
         if (!ImGui.BeginPopup($"ContextMenu_{rowKey}"))
         {
             ImGui.PopStyleColor(2);
-            ImGui.PopStyleVar(5);
+            ImGui.PopStyleVar(2);
             return;
         }
 
@@ -384,7 +370,7 @@ public class MainWindow : Window, IDisposable
 
         ImGui.EndPopup();
         ImGui.PopStyleColor(2);
-        ImGui.PopStyleVar(5);
+        ImGui.PopStyleVar(2);
     }
 
     private void DrawMoodlesModal()
@@ -395,9 +381,6 @@ public class MainWindow : Window, IDisposable
             openMoodlesModal = false;
         }
 
-        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
         ImGui.PushStyleColor(ImGuiCol.PopupBg, ColorWindowBg);
 
         bool open = true;
@@ -473,6 +456,5 @@ public class MainWindow : Window, IDisposable
         }
 
         ImGui.PopStyleColor();
-        ImGui.PopStyleVar(3);
     }
 }

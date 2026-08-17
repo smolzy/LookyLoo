@@ -15,6 +15,7 @@ using System.Linq;
 using System.Numerics;
 using Lumina.Excel.Sheets;
 using Dalamud.Plugin.Ipc;
+using Dalamud.Game.Gui.Dtr;
 using SamplePlugin.Helpers;
 
 namespace SamplePlugin;
@@ -32,6 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] internal static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] internal static IDtrBar DtrBar { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
 
@@ -53,6 +55,9 @@ public sealed class Plugin : IDalamudPlugin
 
     // Moodles IPC
     private readonly ICallGateSubscriber<IPlayerCharacter, List<MoodlesStatusInfo>> getStatusManagerInfoByPlayerV2;
+
+    // DTR Server Info Bar
+    private IDtrBarEntry? dtrEntry;
 
     // Throttle update
     private long lastUpdateTick = 0;
@@ -100,6 +105,23 @@ public sealed class Plugin : IDalamudPlugin
         // Hook into framework update for background scanning
         Framework.Update += OnFrameworkUpdate;
 
+        // DTR Server Info Bar
+        try
+        {
+            dtrEntry = DtrBar.Get("LookyLoo_NearbyPlayers");
+            if (dtrEntry != null)
+            {
+                dtrEntry.Text = "\uE033 -";
+                dtrEntry.Tooltip = "LookyLoo\nLeft Click: Toggle Window\nRight Click: Settings";
+                dtrEntry.OnClick += OnDtrClick;
+                dtrEntry.Shown = Configuration.ShowDtrEntry;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "[LookyLoo] Failed to initialize DTR bar entry.");
+        }
+
         // Auto-open on login
         ClientState.Login += OnLogin;
         ClientState.TerritoryChanged += OnTerritoryChanged;
@@ -113,6 +135,13 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        if (dtrEntry != null)
+        {
+            dtrEntry.OnClick -= OnDtrClick;
+            dtrEntry.Remove();
+            dtrEntry = null;
+        }
+
         ClientState.Login -= OnLogin;
         ClientState.TerritoryChanged -= OnTerritoryChanged;
         Framework.Update -= OnFrameworkUpdate;
@@ -141,6 +170,46 @@ public sealed class Plugin : IDalamudPlugin
     private void OnTerritoryChanged(uint territoryId)
     {
         nearbyPlayers.Clear();
+        UpdateDtrText();
+    }
+
+    public void UpdateDtrShown(bool shown)
+    {
+        if (dtrEntry != null)
+            dtrEntry.Shown = shown;
+    }
+
+    private void OnDtrClick(DtrInteractionEvent mouseEventData)
+    {
+        if (mouseEventData.ClickType == MouseClickType.Left)
+        {
+            ToggleMainUi();
+        }
+        else if (mouseEventData.ClickType == MouseClickType.Right)
+        {
+            ToggleConfigUi();
+        }
+    }
+
+    private void UpdateDtrText()
+    {
+        if (dtrEntry == null || !dtrEntry.Shown) return;
+
+        if (!ClientState.IsLoggedIn)
+        {
+            dtrEntry.Shown = false;
+            return;
+        }
+
+        int totalCount = nearbyPlayers.Count;
+        int targetingCount = nearbyPlayers.Values.Count(p => p.IsActive);
+
+        if (targetingCount > 0)
+            dtrEntry.Text = $"\uE033 {totalCount} ({targetingCount})";
+        else
+            dtrEntry.Text = $"\uE033 {totalCount}";
+
+        dtrEntry.Tooltip = $"LookyLoo\nNearby Players: {totalCount}\nTargeting You: {targetingCount}\n\nLeft Click: Toggle Window\nRight Click: Settings";
     }
 
     // === Framework Update - background scan every 150ms ===
@@ -213,6 +282,8 @@ public sealed class Plugin : IDalamudPlugin
         var toRemove = nearbyPlayers.Keys.Where(k => !foundKeys.Contains(k)).ToList();
         foreach (var k in toRemove)
             nearbyPlayers.Remove(k);
+
+        UpdateDtrText();
     }
 
     // === Native context menu integration (like Peeping Tim) ===
