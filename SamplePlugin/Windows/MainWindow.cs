@@ -138,15 +138,14 @@ public class MainWindow : Window, IDisposable
                 .ToList();
         }
 
-        // Custom Player Cards List
+        // Custom Player List (Compact, seamless style like Peeping Tim)
         using var listChild = ImRaii.Child("PlayerList", new Vector2(0, 0), false, ImGuiWindowFlags.None);
         if (!listChild.Success) return;
 
         // Get the DRAW LIST for the CHILD window so clipping works correctly!
         var childDrawList = ImGui.GetWindowDrawList();
 
-        float cardHeight = 28f * ImGuiHelpers.GlobalScale;
-        float rounding = 0f; // Square / No rounding
+        float rowHeight = ImGui.GetTextLineHeight() + 4f * ImGuiHelpers.GlobalScale;
 
         foreach (var player in filteredList)
         {
@@ -157,10 +156,10 @@ public class MainWindow : Window, IDisposable
             var cursorPos = ImGui.GetCursorScreenPos();
             var availWidth = ImGui.GetContentRegionAvail().X;
             var rectMin = cursorPos;
-            var rectMax = new Vector2(rectMin.X + availWidth, rectMin.Y + cardHeight);
+            var rectMax = new Vector2(rectMin.X + availWidth, rectMin.Y + rowHeight);
             
             // Invisible button for interaction
-            ImGui.InvisibleButton($"##btn_{rowKey}", new Vector2(availWidth, cardHeight));
+            ImGui.InvisibleButton($"##btn_{rowKey}", new Vector2(availWidth, rowHeight));
             bool isHovered = ImGui.IsItemHovered();
             bool isActive = ImGui.IsItemActive();
             
@@ -192,29 +191,33 @@ public class MainWindow : Window, IDisposable
                 selectedPlayerKey = rowKey;
             }
 
-            // Draw Card Background
-            Vector4 bgCol = ColorCardBg;
-            if (isActive) bgCol = ColorCardActive;
-            else if (isHovered) bgCol = ColorCardHover;
-            else if (isSelected) bgCol = ColorCardActive;
-
-            childDrawList.AddRectFilled(rectMin, rectMax, ImGui.ColorConvertFloat4ToU32(bgCol), rounding);
+            // Draw subtle row background only on hover or selection (like Peeping Tim)
+            if (isActive)
+            {
+                childDrawList.AddRectFilled(rectMin, rectMax, ImGui.ColorConvertFloat4ToU32(ColorCardActive), 0f);
+            }
+            else if (isHovered || isSelected)
+            {
+                childDrawList.AddRectFilled(rectMin, rectMax, ImGui.ColorConvertFloat4ToU32(ColorCardHover), 0f);
+            }
             
             // Draw Target Indicator (Green square) if targeting me
-            var textPos = new Vector2(rectMin.X + 12f, rectMin.Y + 8f);
+            float textStartX = rectMin.X + 4f;
+            var textPos = new Vector2(textStartX, rectMin.Y + (rowHeight - ImGui.GetFontSize()) / 2f);
+
             if (player.IsActive)
             {
-                var sqMin = new Vector2(rectMin.X + 12f, rectMin.Y + (cardHeight - 7f) / 2f);
-                var sqMax = new Vector2(rectMin.X + 19f, rectMin.Y + (cardHeight + 7f) / 2f);
+                var sqMin = new Vector2(rectMin.X + 4f, rectMin.Y + (rowHeight - 6f) / 2f);
+                var sqMax = new Vector2(rectMin.X + 10f, rectMin.Y + (rowHeight + 6f) / 2f);
                 childDrawList.AddRectFilled(sqMin, sqMax, ImGui.ColorConvertFloat4ToU32(ColorLiveGreen), 0f);
-                textPos.X += 14f;
+                textPos.X += 10f;
             }
             else if (isCurrentTarget)
             {
-                var sqMin = new Vector2(rectMin.X + 12f, rectMin.Y + (cardHeight - 7f) / 2f);
-                var sqMax = new Vector2(rectMin.X + 19f, rectMin.Y + (cardHeight + 7f) / 2f);
+                var sqMin = new Vector2(rectMin.X + 4f, rectMin.Y + (rowHeight - 6f) / 2f);
+                var sqMax = new Vector2(rectMin.X + 10f, rectMin.Y + (rowHeight + 6f) / 2f);
                 childDrawList.AddRectFilled(sqMin, sqMax, 0xFF00D8FFu, 0f); // Gold/Yellow
-                textPos.X += 14f;
+                textPos.X += 10f;
             }
 
             // Draw Name
@@ -223,8 +226,6 @@ public class MainWindow : Window, IDisposable
             else if (player.HasEverTargetedMe) nameColor = ColorSubtle; // Grayed out for history
             if (!player.IsLoaded) nameColor = config.UnloadedColor;
             
-            // Adjust vertical centering
-            textPos.Y = rectMin.Y + (cardHeight - ImGui.GetFontSize()) / 2f;
             childDrawList.AddText(textPos, ImGui.ColorConvertFloat4ToU32(nameColor), player.Name);
             
             float curX = textPos.X + ImGui.CalcTextSize(player.Name).X;
@@ -274,11 +275,9 @@ public class MainWindow : Window, IDisposable
             if (!string.IsNullOrEmpty(rightStr))
             {
                 var rightSize = ImGui.CalcTextSize(rightStr);
-                var rightPos = new Vector2(rectMax.X - rightSize.X - 10f, textPos.Y);
+                var rightPos = new Vector2(rectMax.X - rightSize.X - 4f, textPos.Y);
                 childDrawList.AddText(rightPos, subtleColorU32, rightStr);
             }
-
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 2f); // Compact spacing
 
             DrawContextMenu(player, rowKey, config);
         }
