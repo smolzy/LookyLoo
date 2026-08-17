@@ -102,6 +102,7 @@ public sealed class Plugin : IDalamudPlugin
 
         // Auto-open on login
         ClientState.Login += OnLogin;
+        ClientState.TerritoryChanged += OnTerritoryChanged;
         if (ClientState.IsLoggedIn && Configuration.OpenOnLogin)
         {
             MainWindow.IsOpen = true;
@@ -113,6 +114,7 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         ClientState.Login -= OnLogin;
+        ClientState.TerritoryChanged -= OnTerritoryChanged;
         Framework.Update -= OnFrameworkUpdate;
         ContextMenu.OnMenuOpened -= OnNativeMenuOpened;
 
@@ -134,6 +136,11 @@ public sealed class Plugin : IDalamudPlugin
         {
             MainWindow.IsOpen = true;
         }
+    }
+
+    private void OnTerritoryChanged(uint territoryId)
+    {
+        nearbyPlayers.Clear();
     }
 
     // === Framework Update - background scan every 150ms ===
@@ -202,23 +209,8 @@ public sealed class Plugin : IDalamudPlugin
             }
         }
 
-        // Mark players no longer in range as inactive
-        foreach (var kv in nearbyPlayers)
-        {
-            if (!foundKeys.Contains(kv.Key))
-            {
-                kv.Value.IsActive = false;
-                kv.Value.IsLoaded = false;
-                kv.Value.WasTargetingMe = false;
-            }
-        }
-
-        // Remove players not seen for > 5 minutes (keep history up to 60 mins for those who targeted us)
-        var toRemove = nearbyPlayers
-            .Where(kv => !kv.Value.IsLoaded && (DateTime.Now - kv.Value.LastSeen).TotalMinutes > (kv.Value.HasEverTargetedMe ? 60 : 5))
-            .Select(kv => kv.Key)
-            .ToList();
-
+        // Remove players no longer in range immediately
+        var toRemove = nearbyPlayers.Keys.Where(k => !foundKeys.Contains(k)).ToList();
         foreach (var k in toRemove)
             nearbyPlayers.Remove(k);
     }
