@@ -392,21 +392,23 @@ public sealed class Plugin : IDalamudPlugin
         {
             try
             {
-                uint territoryId = ClientState.TerritoryType;
-                var territoryRow = DataManager.GetExcelSheet<TerritoryType>()?.GetRowOrDefault(territoryId);
-                uint mapId = territoryRow?.Map.RowId ?? 0;
-
                 unsafe
                 {
                     var agentMap = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMap.Instance();
-                    if (agentMap != null && agentMap->CurrentMapId != 0)
+                    if (agentMap != null)
                     {
-                        mapId = agentMap->CurrentMapId;
+                        uint territoryId = ClientState.TerritoryType;
+                        uint mapId = agentMap->CurrentMapId;
+                        if (mapId == 0)
+                        {
+                            var territoryRow = DataManager.GetExcelSheet<TerritoryType>()?.GetRowOrDefault(territoryId);
+                            mapId = territoryRow?.Map.RowId ?? 0;
+                        }
+
+                        agentMap->SetFlagMapMarker(territoryId, mapId, pc.Position);
+                        agentMap->OpenMap(mapId, territoryId);
                     }
                 }
-
-                var payload = new Dalamud.Game.Text.SeStringHandling.Payloads.MapLinkPayload(territoryId, mapId, pc.Position.X, pc.Position.Z);
-                GameGui.OpenMapWithMapLink(payload);
             }
             catch (Exception ex)
             {
