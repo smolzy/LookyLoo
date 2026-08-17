@@ -228,10 +228,10 @@ public sealed class Plugin : IDalamudPlugin
 
         foreach (var obj in ObjectTable)
         {
-            if (obj is IPlayerCharacter pc && pc.GameObjectId != localId)
+            if (obj is IPlayerCharacter pc && pc.GameObjectId != localId && pc.Level != 0 && pc.ObjectIndex < 240)
             {
                 float dist = System.Numerics.Vector3.Distance(localPlayer.Position, pc.Position);
-                if (dist > Configuration.MaxDistance)
+                if (Configuration.MaxDistance > 0 && dist > Configuration.MaxDistance)
                     continue;
 
                 string key = GetPlayerKey(pc);
