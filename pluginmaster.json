@@ -3,7 +3,7 @@
     "Author": "Zericard",
     "Name": "LookyLoo",
     "InternalName": "LookyLoo",
-    "AssemblyVersion": "1.0.0.1",
+    "AssemblyVersion": "1.0.0.2",
     "Description": "A lightweight, modern UI plugin that monitors nearby players and highlights those who have you targeted. Includes a stealthy context menu for inspecting others without changing your own facing direction.",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
