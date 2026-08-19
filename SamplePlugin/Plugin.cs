@@ -50,6 +50,9 @@ public sealed class Plugin : IDalamudPlugin
     // Key = "Name@World"
     private readonly Dictionary<string, NearbyPlayerInfo> nearbyPlayers = new();
 
+    // Persistent targeting history for the session (never cleared until game close)
+    private readonly Dictionary<string, NearbyPlayerInfo> targetingHistory = new();
+
     // World name cache
     private readonly Dictionary<uint, string> worldNames = new();
 
@@ -267,6 +270,22 @@ public sealed class Plugin : IDalamudPlugin
                     {
                         info.HasEverTargetedMe = true;
                         info.LastTargetedMeTime = DateTime.Now;
+
+                        // Add/update persistent session history
+                        if (!targetingHistory.TryGetValue(key, out var histEntry))
+                        {
+                            targetingHistory[key] = info;
+                        }
+                        else
+                        {
+                            histEntry.Name = info.Name;
+                            histEntry.World = info.World;
+                            histEntry.JobAbbreviation = info.JobAbbreviation;
+                            histEntry.Level = info.Level;
+                            histEntry.CompanyTag = info.CompanyTag;
+                            histEntry.LastTargetedMeTime = DateTime.Now;
+                            histEntry.HasEverTargetedMe = true;
+                        }
                     }
                 }
 
@@ -275,10 +294,26 @@ public sealed class Plugin : IDalamudPlugin
             }
         }
 
-        // Remove players no longer in range immediately
+        // Remove players no longer in range immediately (but only those who never targeted us)
         var toRemove = nearbyPlayers.Keys.Where(k => !foundKeys.Contains(k)).ToList();
         foreach (var k in toRemove)
             nearbyPlayers.Remove(k);
+
+        // Update history entries: mark as inactive if player left zone
+        foreach (var kv in targetingHistory)
+        {
+            if (nearbyPlayers.TryGetValue(kv.Key, out var current))
+            {
+                kv.Value.IsActive = current.IsActive;
+                kv.Value.IsLoaded = current.IsLoaded;
+                kv.Value.GameObjectId = current.GameObjectId;
+            }
+            else
+            {
+                kv.Value.IsActive = false;
+                kv.Value.IsLoaded = false;
+            }
+        }
 
         UpdateDtrText();
     }
@@ -339,8 +374,8 @@ public sealed class Plugin : IDalamudPlugin
 
     public List<NearbyPlayerInfo> GetViewersTargetingMe()
     {
-        return nearbyPlayers.Values
-            .Where(p => p.HasEverTargetedMe)
+        // Use the persistent session history — never cleared until game closes
+        return targetingHistory.Values
             .OrderByDescending(p => p.IsActive)
             .ThenByDescending(p => p.LastTargetedMeTime)
             .ToList();
