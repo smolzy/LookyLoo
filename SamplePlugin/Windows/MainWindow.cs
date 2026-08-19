@@ -203,20 +203,21 @@ public class MainWindow : Window, IDisposable
             {
                 var sqMin = new Vector2(rectMin.X + 4f, rectMin.Y + (rowHeight - 6f) / 2f);
                 var sqMax = new Vector2(rectMin.X + 10f, rectMin.Y + (rowHeight + 6f) / 2f);
-                childDrawList.AddRectFilled(sqMin, sqMax, ImGui.ColorConvertFloat4ToU32(ColorLiveGreen), 0f);
+                childDrawList.AddRectFilled(sqMin, sqMax, ImGui.ColorConvertFloat4ToU32(config.TargetingMeColor), 0f);
                 textPos.X += 10f;
             }
             else if (isCurrentTarget)
             {
                 var sqMin = new Vector2(rectMin.X + 4f, rectMin.Y + (rowHeight - 6f) / 2f);
                 var sqMax = new Vector2(rectMin.X + 10f, rectMin.Y + (rowHeight + 6f) / 2f);
-                childDrawList.AddRectFilled(sqMin, sqMax, 0xFF00D8FFu, 0f); // Gold/Yellow
+                childDrawList.AddRectFilled(sqMin, sqMax, 0xFF00D8FFu, 0f); // Cyan for self-target
                 textPos.X += 10f;
             }
 
             // Draw Name
-            Vector4 nameColor = ColorBody;
-            if (player.IsActive || isCurrentTarget) nameColor = new Vector4(1, 1, 1, 1);
+            Vector4 nameColor = config.NearbyPlayerColor;
+            if (player.IsActive) nameColor = config.TargetingMeColor;
+            else if (isCurrentTarget) nameColor = new Vector4(0f, 0.85f, 1f, 1f);
             else if (player.HasEverTargetedMe) nameColor = ColorSubtle; // Grayed out for history
             if (!player.IsLoaded) nameColor = config.UnloadedColor;
             
